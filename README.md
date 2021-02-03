@@ -1,4 +1,4 @@
-[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/BiodataAnalysisGroup/godel-numbering/master?filepath=Biological-Sequences-and-Godel-numbers.ipynb)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/BiodataAnalysisGroup/godel-numbering/main?filepath=Biological-Sequences-and-Godel-numbers.ipynb)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
