@@ -1,8 +1,18 @@
+# clear
+cat("\014")
+rm(list = ls())
+dev.off(dev.list()["RStudioGD"])
+
+# Libraries
 library(seqinr)
 library(MASS)
 library(ggplot2)
 library(ggpubr)
 
+
+#---------------- FUNCTIONS ----------------------------------------------------
+
+# Returns prime numbers up to integer n
 sieve <- function(n) {
   n <- as.integer(n)
   if(n > 1e6) stop("n too large")
@@ -17,12 +27,13 @@ sieve <- function(n) {
   which(primes)
 }
 
+# Reads sequence from input file
 seqList <- function(x, type) {
   if (type == "DNA") {
     as.list(read.fasta(x,
-                       as.string = FALSE,
+                       as.string = TRUE,
                        seqtype="DNA",
-                       seqonly = FALSE,
+                       seqonly = TRUE,
                        strip.desc = TRUE))
   }
   else {
@@ -39,6 +50,7 @@ seqList <- function(x, type) {
   }
 }
 
+# Generates random DNA sequences
 createRandomSequencesBasedOnDistr <- function(count, length, prob=c(0.25,0.25,0.25,0.25), fileNameRandSeqs) {
   
   sink(fileNameRandSeqs)
@@ -50,6 +62,7 @@ createRandomSequencesBasedOnDistr <- function(count, length, prob=c(0.25,0.25,0.
   sink()
 }
 
+# Generating random permutations of godel number assignments
 createRandomSequenceValues <- function(seedList, type) {
   
   if ( type == "DNA" ) {
@@ -83,10 +96,10 @@ assignSets <- function(randSequenceValues, type) {
     }
     cat(stringValues)
     cat(")\n")
-    assign("a", randSequenceValues[1], envir = .GlobalEnv)
-    assign("t", randSequenceValues[2], envir = .GlobalEnv)
-    assign("g", randSequenceValues[3], envir = .GlobalEnv)
-    assign("c", randSequenceValues[4], envir = .GlobalEnv)
+    assign("A", randSequenceValues[1], envir = .GlobalEnv)
+    assign("C", randSequenceValues[2], envir = .GlobalEnv)
+    assign("G", randSequenceValues[3], envir = .GlobalEnv)
+    assign("T", randSequenceValues[4], envir = .GlobalEnv)
   }
   else if ( type == "AA") {
     # AA Set 1
@@ -124,6 +137,7 @@ assignSets <- function(randSequenceValues, type) {
   stringValues
 }
 
+# Statistics function
 godelStatistics <- function(x) {
     
   if (logOutput) {
@@ -144,10 +158,36 @@ godelStatistics <- function(x) {
   return(results)
 }
 
-primes <- sieve(20000) # length of primes should be >= max sequence length
-logOutput <- FALSE     # debug output
-numberOfPoints <- 4;   # number of different assignments of letters for Godel numbers
-replicate <- FALSE     # if we need to set specific seed numbers
+calculateGodelNumbers <- function(sequences, primes, encoding){
+  
+  
+  chars = str_split(sequences, "", simplify = TRUE)
+  
+  chars.enc = matrix(data = 0, nrow = nrow(chars), ncol = ncol(chars))
+  
+  chars.enc = chars.enc + (chars == "A") * encoding[1]
+  chars.enc = chars.enc + (chars == "C") * encoding[2]
+  chars.enc = chars.enc + (chars == "G") * encoding[3]
+  chars.enc = chars.enc + (chars == "T") * encoding[4]
+  
+  primes = log(primes)
+  
+  chars.enc = chars.enc %*% diag(primes)
+  godel_nums <- rowSums(chars.enc) # gn_new
+  return(godel_nums)
+  
+  
+}
+
+
+#----------------------------- Main code ---------------------------------------
+
+primes <- sieve(20000)            # length of primes should be >= max sequence length
+logOutput <- FALSE                # debug output
+numberOfPoints <- 4;              # number of different assignments of letters for Godel numbers (we have DNA data)
+replicate <- TRUE                 # if we need to set specific seed numbers
+type <- "DNA"                     # type of data
+dataset_type <- "artificial"      # 'artificial' for artificial dataset, 'real' for real-world data
 
 if (replicate == FALSE) {
   seedValuesList <- sample(seq(from = 1, to = 1000, by = 1), size = numberOfPoints, replace = FALSE)
@@ -159,25 +199,33 @@ if (replicate == FALSE) {
   numberOfPoints <- length(seedValuesList)
 }
 
-type <- "DNA"
+
 # The following values should execute within 6 minutes with a good enough resolution
-seqLengthLimit <- 361
-numberOfArtificialSeqs <- 821     # "A","C","G","T"
+seqLengthLimit <- 150
+numberOfArtificialSeqs <- 90000     # "A","C","G","T"
+
 # amend the following line for your particular distribution on nucloetide presence.
-createRandomSequencesBasedOnDistr(numberOfArtificialSeqs, seqLengthLimit, c(0.25,0.25,0.25,0.25), "data/artificialSeqs.fasta")
-ompGene.list <- seqList("data/artificialSeqs.fasta", type)
-# ompGene.list <- seqList("data/realSeqs.fasta", type)
-ompGene.list.raw <- ompGene.list
+# Creating artificial data set
+# createRandomSequencesBasedOnDistr(numberOfArtificialSeqs, seqLengthLimit, c(0.25,0.25,0.25,0.25), "data/artificialSeqs.fasta")
+
+# Loading a fasta file - artificial dataset
+if (dataset_type == "artificial"){
+  ompGene.list <- seqList("data/artificialSeqs.fasta", type)
+  ompGene.list.raw <- ompGene.list
+} else if (dataset_type == "real"){
+  ompGene.list <- seqList("data/realSeqs_biom_150bp.fasta", type)
+} else {
+  print("Incorrect dataset type.")
+}
 
 randValues <- createRandomSequenceValues(seedValuesList, type)
+sequences <- unlist(ompGene.list)
 
-randValues
-
+# randValues
 # Do not run this cell if you want to check for all nucleotides and not just for A
 # randValues[1,] <- c(3, 2, 1, 4)
-randValues
+# randValues
 
-ompGene.list <- ompGene.list.raw[which(getLength(ompGene.list.raw) >= 1)]
 sizeExp <- length(ompGene.list)
 selectedSequences <- c(1:sizeExp)
 
@@ -191,37 +239,16 @@ godelValuePoints$seqNames <- unlist(attributes(ompGene.list)$name)
 
 stringAssignValues <- vector(mode="character", length=numberOfPoints)
 
+len_of_sequences <- str_length(sequences[1])
+primes <- primes[1:len_of_sequences]
+primes <- as.numeric(primes)
+
 for (indexPos in 1:numberOfPoints) {
   stringAssignValues[indexPos] <- assignSets(randValues[indexPos,], type)
   
-  godel.value.exp <- list()
-  godel.value.log <- list()
+  encoding <- randValues[indexPos,]
+  godelValuePoints[, paste('godel_log_pos', indexPos, sep = '')] <- calculateGodelNumbers(sequences, primes, encoding)
   
-  for (indexSeq in selectedSequences) {
-    
-    godel.value.exp[[indexSeq]] <- 1
-    godel.value.log[[indexSeq]] <- 0
-    
-    if (logOutput) {
-      cat("Sequence length  ")
-      cat(indexSeq)
-      cat("  :")
-      cat(length(ompGene.list[indexSeq][[1]]))
-      cat("\n")
-    }
-
-    for (i in 1:length(ompGene.list[indexSeq][[1]])) {
-      
-      prime <- as.numeric(primes[i])
-      alpha <- as.numeric(get(as.character(ompGene.list[[indexSeq]])[i]))
-      
-      godel.value.exp[[indexSeq]] <- godel.value.exp[[indexSeq]] * prime ** alpha
-      godel.value.log[[indexSeq]] <- godel.value.log[[indexSeq]] + alpha*log(prime)
-    }
-    
-  }
-  
-  godelValuePoints[, paste('godel_log_pos', indexPos, sep = '')] <- unlist(godel.value.log)
 }
 
 statsPos <- data.frame(matrix(0, ncol = 7, nrow = numberOfPoints))
@@ -259,20 +286,24 @@ statsPos$fit_sd <- ((para[,2]-theoreticalStdEqual)/para[,2])*100
 mean(statsPos$fit_estimate)
 mean(statsPos$fit_sd)
 
-
+#-------------------- Main histogram plotting ----------------------------------
+dir.create('plots')
 indexPos = 10
-
 binwidthPlot = 5
 
-ggplot(godelValuePoints, aes(x=godelValuePoints[, indexPos]), environment = environment()) + 
+filepath <- paste('plots/histogram_',dataset_type, '.png', sep = '' )
+png(file = filepath, width=800, height=600)
+my_plot <- ggplot(godelValuePoints, aes(x=godelValuePoints[, indexPos]), environment = environment()) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white", binwidth=binwidthPlot)+
   geom_density(alpha=.2, fill="#FF6666") +
   stat_function(fun = dnorm, args = list(mean = para[indexPos, 1], sd = para[indexPos, 2]), color = "darkred", size = 2, linetype = "dotdash") +
   labs(title= "Histogram and Density plot of Godel numbers",x="Godel numbers", y = "Density")+
   scale_color_brewer(palette="Accent") + 
   theme_minimal()
+print(my_plot)
+dev.off()
 
-
+# ---------------- Other plots -------------------------------------------------
 
 p1 <- ggplot(statsPos, aes(x = reorder(stringAssignValues, fit_estimate), y = fit_estimate, group=1)) +
   geom_point() +
