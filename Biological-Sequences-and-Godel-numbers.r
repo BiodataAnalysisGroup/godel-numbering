@@ -8,7 +8,8 @@ library(seqinr)
 library(MASS)
 library(ggplot2)
 library(ggpubr)
-
+library(stringr)
+library(combinat)
 
 #---------------- FUNCTIONS ----------------------------------------------------
 
@@ -184,19 +185,22 @@ calculateGodelNumbers <- function(sequences, primes, encoding){
 
 primes <- sieve(20000)            # length of primes should be >= max sequence length
 logOutput <- FALSE                # debug output
-numberOfPoints <- 4;              # number of different assignments of letters for Godel numbers (we have DNA data)
+numberOfEncodings <- 24;              # number of different assignments of letters for Godel numbers (we have DNA data)
 replicate <- TRUE                 # if we need to set specific seed numbers
 type <- "DNA"                     # type of data
-dataset_type <- "artificial"      # 'artificial' for artificial dataset, 'real' for real-world data
+
+# 'artificial' and 'artificial-non-uni' for artificial dataset, 'real-bam' or 'human' for real-world data
+dataset_type <- "real"
+encodings <- permn(c(1,2,3,4))
 
 if (replicate == FALSE) {
-  seedValuesList <- sample(seq(from = 1, to = 1000, by = 1), size = numberOfPoints, replace = FALSE)
-  for (i in 1:numberOfPoints) {
+  seedValuesList <- sample(seq(from = 1, to = 1000, by = 1), size = numberOfEncodings, replace = FALSE)
+  for (i in 1:numberOfEncodings) {
     cat(paste(seedValuesList[i], ", "))
   }
 } else {
   seedValuesList <- as.numeric(unlist(read.csv(file="seeds.csv", header = FALSE)))
-  numberOfPoints <- length(seedValuesList)
+  numberOfEncodings <- length(encodings)
 }
 
 
@@ -206,7 +210,7 @@ numberOfArtificialSeqs <- 90000     # "A","C","G","T"
 
 # amend the following line for your particular distribution on nucloetide presence.
 # Creating artificial data set
-# createRandomSequencesBasedOnDistr(numberOfArtificialSeqs, seqLengthLimit, c(0.25,0.25,0.25,0.25), "data/artificialSeqs.fasta")
+# createRandomSequencesBasedOnDistr(numberOfArtificialSeqs, seqLengthLimit, c(0.3,0.3,0.2,0.2), "data/artificialSeq-non-unis.fasta")
 
 # Loading a fasta file - artificial dataset
 if (dataset_type == "artificial"){
@@ -214,63 +218,76 @@ if (dataset_type == "artificial"){
   ompGene.list.raw <- ompGene.list
 } else if (dataset_type == "real"){
   ompGene.list <- seqList("data/realSeqs_biom_150bp.fasta", type)
+} else if (dataset_type == "artificial-non-uni"){
+  ompGene.list <- seqList("data/artificialSeq-non-unis.fasta", type)
 } else {
   print("Incorrect dataset type.")
 }
 
-randValues <- createRandomSequenceValues(seedValuesList, type)
+#encodingValues <- createRandomSequenceValues(seedValuesList, type) - we don't neet this function
+encodingValues <- matrix(0, nrow = length(encodings), ncol = 4)
+for (i in 1:nrow(encodingValues)){
+  encodingValues[i,] <- encodings[[i]]
+}
+
 sequences <- unlist(ompGene.list)
 
-# randValues
+# encodingValues
 # Do not run this cell if you want to check for all nucleotides and not just for A
-# randValues[1,] <- c(3, 2, 1, 4)
-# randValues
+# encodingValues[1,] <- c(3, 2, 1, 4)
+# encodingValues
 
 sizeExp <- length(ompGene.list)
 selectedSequences <- c(1:sizeExp)
 
-godelValuePoints <- data.frame(matrix(0, ncol = numberOfPoints, nrow = sizeExp))
+godelValuePoints <- data.frame(matrix(0, ncol = numberOfEncodings, nrow = sizeExp))
 namesList <- list()
-for (i in 1:numberOfPoints) {
+for (i in 1:numberOfEncodings) {
   namesList[i] <- paste('godel_log_pos', i, sep = '')
 }
 godelValuePoints <- setNames(godelValuePoints, namesList)
 godelValuePoints$seqNames <- unlist(attributes(ompGene.list)$name)
 
-stringAssignValues <- vector(mode="character", length=numberOfPoints)
+stringAssignValues <- vector(mode="character", length=numberOfEncodings)
 
 len_of_sequences <- str_length(sequences[1])
 primes <- primes[1:len_of_sequences]
 primes <- as.numeric(primes)
 
-for (indexPos in 1:numberOfPoints) {
-  stringAssignValues[indexPos] <- assignSets(randValues[indexPos,], type)
-  
-  encoding <- randValues[indexPos,]
+for (indexPos in 1:numberOfEncodings) {
+
+  stringAssignValues[indexPos] <- assignSets(encodingValues[indexPos,], type)
+  encoding <- encodingValues[indexPos,]
   godelValuePoints[, paste('godel_log_pos', indexPos, sep = '')] <- calculateGodelNumbers(sequences, primes, encoding)
-  
+
 }
 
-statsPos <- data.frame(matrix(0, ncol = 7, nrow = numberOfPoints))
+
+statsPos <- data.frame(matrix(0, ncol = 7, nrow = numberOfEncodings))
 statsPos <- setNames(statsPos, c("minG", "firstQG", "medianG", "meanG", "thirdQG", "maxG", "stdG"))
-for (indexPos in 1:numberOfPoints) {
+for (indexPos in 1:numberOfEncodings) {
   statsPos[indexPos, ] <- godelStatistics(godelValuePoints[, paste('godel_log_pos', indexPos, sep = '')])
 }
 
-statsPos
+statsPos_rownames <- c()
+for (i in 1:numberOfEncodings){
+  this_enc <- paste(encodingValues[i,], collapse = '')
+  statsPos_rownames <- c(statsPos_rownames, paste("enc_", this_enc, sep = ''))
+}
 
+rownames(statsPos) <- statsPos_rownames
+
+
+# Theoretical distribution parameters
 P1 <- sum(log(primes[1:seqLengthLimit]))
 P2 <- sum((log(primes[1:seqLengthLimit]))^2)
-
 theoreticalMeanEqual <- P1*2.5
 theoreticalStdEqual <- sqrt(P2*1.25)
+theoretical_dist <- rnorm(90000, theoreticalMeanEqual, theoreticalStdEqual)
 
-theoreticalMeanEqual
-theoreticalStdEqual
-
-
-para <- matrix(nrow=numberOfPoints, ncol = 2)
-for (indexPos in 1:numberOfPoints) {
+# comparisons
+para <- matrix(nrow=numberOfEncodings, ncol = 2)
+for (indexPos in 1:numberOfEncodings) {
   fit <- fitdistr(godelValuePoints[, indexPos], "normal")
   para[indexPos, 1] <- fit$estimate["mean"]
   para[indexPos, 2] <- fit$estimate["sd"]
@@ -281,23 +298,35 @@ statsPos$stringAssignValues <- as.factor(stringAssignValues)
 statsPos$fit_estimate <- ((para[,1]-theoreticalMeanEqual)/para[,1])*100
 statsPos$fit_sd <- ((para[,2]-theoreticalStdEqual)/para[,2])*100
 
+statsPos$theoretical_mean <- theoreticalMeanEqual
+statsPos$theoretical_std <-theoreticalStdEqual
 
+# t-test
+statsPos$p.value <- NaN
+for (i in 1:numberOfEncodings){
+  t_test_results <- t.test(godelValuePoints[,i], theoretical_dist)
+  statsPos[i,]$p.value <- t_test_results$p.value
+}
 
-mean(statsPos$fit_estimate)
-mean(statsPos$fit_sd)
 
 #-------------------- Main histogram plotting ----------------------------------
 dir.create('plots')
-indexPos = 10
+indexPos = 1 #7,9,15,16,17,18,19,21
 binwidthPlot = 5
+this_enc <- paste(encodingValues[indexPos,], collapse = '')
 
-filepath <- paste('plots/histogram_',dataset_type, '.png', sep = '' )
+# comparisons file save
+filepath <- paste('plots/comparisons_',dataset_type, '.csv', sep = '' )
+write.csv(as.data.frame(statsPos), file = filepath)
+
+# Plots
+filepath <- paste('plots/histogram_encoding_', this_enc,'_',dataset_type, '.png', sep = '' )
 png(file = filepath, width=800, height=600)
 my_plot <- ggplot(godelValuePoints, aes(x=godelValuePoints[, indexPos]), environment = environment()) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white", binwidth=binwidthPlot)+
   geom_density(alpha=.2, fill="#FF6666") +
   stat_function(fun = dnorm, args = list(mean = para[indexPos, 1], sd = para[indexPos, 2]), color = "darkred", size = 2, linetype = "dotdash") +
-  labs(title= "Histogram and Density plot of Godel numbers",x="Godel numbers", y = "Density")+
+  labs(title= paste("Histogram and Density plot of Godel numbers - encoding ", this_enc, sep = ''),x="Godel numbers", y = "Density")+
   scale_color_brewer(palette="Accent") + 
   theme_minimal()
 print(my_plot)
@@ -324,14 +353,14 @@ ggarrange(p1 + rremove("x.text"), p2,
 
 # a t g c
 lapply(which(statsPos$maxG == min(statsPos$maxG)),
-       function(x) assignSets(randValues[x,], "DNA"))
+       function(x) assignSets(encodingValues[x,], "DNA"))
 # artificial dataset: 4 , 1 , 3 , 2 (min of meanG)
 # artificial dataset: 4 , 2 , 1 , 3 (min of minG)
 # artificial dataset: 2 , 1 , 3 , 4 (min of maxG)
 
 # a t g c
 lapply(which(statsPos$maxG == max(statsPos$maxG)),
-       function(x) assignSets(randValues[x,], "DNA"))
+       function(x) assignSets(encodingValues[x,], "DNA"))
 # artificial dataset: 1 , 4 , 2 , 3 (max of meanG)
 # artificial dataset: 4 , 3 , 2 , 1 (max of minG)
 # artificial dataset: 1 , 3 , 4 , 2 (max of maxG)
