@@ -42,7 +42,7 @@ git clone https://github.com/BiodataAnalysisGroup/godel-numbering.git
 ### Running the project
 The main framework consists of six scripts:
 - ```Biological-Sequences-and-Godel-numbers.R```
-- ```e-mtab-data.R````
+- ```e-mtab-data.R```
 
 In order to run the project:
 1. Set the main project folder as your working directory.
