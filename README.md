@@ -42,7 +42,13 @@ git clone https://github.com/BiodataAnalysisGroup/godel-numbering.git
 ### Running the project
 The main framework consists of six scripts:
 - ```Biological-Sequences-and-Godel-numbers.R```
+  - **Specifying input**: Line 16. Specify `dataset_type` parameter depending on which dataset to run the analysis for. 
+  - **Outputs**: Plots and statistical stuff array inside `plots` directoy.
 - ```e-mtab-data.R```
+  - **Specifying input**:
+    1. Line 17. Specify the directory in your computer, in which [E-MTAB-6962 - RNA-seq dataset](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-6962/samples/) files are stored.
+    2. Line 26: Specify whether to run the analysis for S1_L001 or S10_L001 sample.
+  - **Outputs**: Plots and statistical stuff array inside `plots` directoy.
 
 In order to run the project:
 1. Set the main project folder as your working directory.
