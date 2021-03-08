@@ -40,10 +40,12 @@ git clone https://github.com/BiodataAnalysisGroup/godel-numbering.git
 - **Store them in the same directoy.**.
 
 ### Running the project
-The main framework consists of six scripts:
+The analysis is implemented in two scripts:
+
 - ```Biological-Sequences-and-Godel-numbers.R```
   - **Specifying input**: Line 16. Specify `dataset_type` parameter depending on which dataset to run the analysis for. 
   - **Outputs**: Plots and statistical stuff array inside `plots` directoy.
+
 - ```e-mtab-data.R```
   - **Specifying input**:
     1. Line 17. Specify the directory in your computer, in which [E-MTAB-6962 - RNA-seq dataset](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-6962/samples/) files are stored.
@@ -55,5 +57,10 @@ In order to run the project:
 2. Execute either `Biological-Sequences-and-Godel-numbers.R`or `e-mtab-data.R`, depending on which analysis you would like to run.
 
 ## Additional scripts
-- `biom_data_150bp_to_fasta.R`: Transforms `biom_data_150bp.rda` into .fasta file.
+- `biom_data_150bp_to_fasta.R`: Converts `biom_data_150bp.rda` into .fasta file.
 
+## Input
+- Input files are stored inside `data` folder.
+
+## Output
+- For extra details about the output please move to the `output` [folder](https://github.com/BiodataAnalysisGroup/miRNAtool/tree/main/output) and checkout the correpsonding README.md file
