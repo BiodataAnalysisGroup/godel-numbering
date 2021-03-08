@@ -60,7 +60,7 @@ In order to run the project:
 - `biom_data_150bp_to_fasta.R`: Converts `biom_data_150bp.rda` into .fasta file.
 
 ## Input
-- Input files are stored inside `data` folder.
+- Input files are stored inside `data` directory.
 
 ## Output
-- For extra details about the output please move to the `output` [folder](https://github.com/BiodataAnalysisGroup/miRNAtool/tree/main/output) and checkout the correpsonding README.md file
+- Outputs are stored inside `plots` directory.
