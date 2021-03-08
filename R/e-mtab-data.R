@@ -12,6 +12,30 @@ library(ggplot2)
 library(ggpubr)
 library(combinat)
 
+#-----------------   SPECIFYING FILE -------------------------------------------
+# folder where ERR2681749_1.fastq.gz and ERR2681763_1.fastq.gz are stored
+emtab_data_folder <- paste(dirname(getwd()), 'E-MTAB-6962', sep = '/')
+
+# files
+file1 <- 'ERR2681749_1.fastq.gz' # S10_L001 - subset 6
+file2 <- 'ERR2681763_1.fastq.gz' # S1_L001 - subset 8
+
+# choose file
+# file1: ERR2681749_1.fastq.gz - S10_L001
+# file2: ERR2681763_1.fastq.gz - S1_L001
+file_chosen <- file2
+
+
+if (file_chosen == 'ERR2681749_1.fastq.gz'){
+  file_code = 'S10_L001'
+} else if (file_chosen == 'ERR2681763_1.fastq.gz'){
+  file_code = 'S1_L001'
+} else {
+  print("error, wrong file")
+}
+filepath <- paste(emtab_data_folder, file_chosen, sep = '/')
+
+
 #---------------- FUNCTIONS ----------------------------------------------------
 
 # Returns prime numbers up to integer n
@@ -180,24 +204,6 @@ calculateGodelNumbers <- function(sequences, primes, encoding){
 }
 
 #----------------------------- Main code ---------------------------------------
-# folder
-emtab_data_folder <- paste(dirname(getwd()), 'E-MTAB-6962', sep = '/')
-
-# files
-file1 <- 'ERR2681749_1.fastq.gz' # S10_L001 - subset 6
-file2 <- 'ERR2681763_1.fastq.gz' # S1_L001 - subset 8
-
-# choose file
-file_chosen <- file2
-if (file_chosen == 'ERR2681749_1.fastq.gz'){
-  file_code = 'S10_L001'
-} else if (file_chosen == 'ERR2681763_1.fastq.gz'){
-  file_code = 'S1_L001'
-} else {
-  print("error, wrong file")
-}
-filepath <- paste(emtab_data_folder, file_chosen, sep = '/')
-
 # readfastq - checking
 sequences <- readFastq(filepath)
 

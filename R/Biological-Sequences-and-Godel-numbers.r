@@ -11,6 +11,10 @@ library(ggpubr)
 library(stringr)
 library(combinat)
 
+#--------------------- SELECT DATA ---------------------------------------------
+# 'artificial' and 'artificial-non-uni' for artificial dataset, 'real' for real-world data (biom_data_150bp.rda)
+dataset_type <- "artificial"
+
 #---------------- FUNCTIONS ----------------------------------------------------
 
 # Returns prime numbers up to integer n
@@ -182,33 +186,19 @@ calculateGodelNumbers <- function(sequences, primes, encoding){
 
 
 #----------------------------- Main code ---------------------------------------
-
 primes <- sieve(20000)            # length of primes should be >= max sequence length
 logOutput <- FALSE                # debug output
-numberOfEncodings <- 24;              # number of different assignments of letters for Godel numbers (we have DNA data)
 replicate <- TRUE                 # if we need to set specific seed numbers
 type <- "DNA"                     # type of data
 
-# 'artificial' and 'artificial-non-uni' for artificial dataset, 'real-bam' or 'human' for real-world data
-dataset_type <- "real"
+# encodings
 encodings <- permn(c(1,2,3,4))
-
-if (replicate == FALSE) {
-  seedValuesList <- sample(seq(from = 1, to = 1000, by = 1), size = numberOfEncodings, replace = FALSE)
-  for (i in 1:numberOfEncodings) {
-    cat(paste(seedValuesList[i], ", "))
-  }
-} else {
-  seedValuesList <- as.numeric(unlist(read.csv(file="seeds.csv", header = FALSE)))
-  numberOfEncodings <- length(encodings)
-}
-
+numberOfEncodings <- 24;              # number of different assignments of letters for Godel numbers (we have DNA data)
 
 # The following values should execute within 6 minutes with a good enough resolution
 seqLengthLimit <- 150
 numberOfArtificialSeqs <- 90000     # "A","C","G","T"
 
-# amend the following line for your particular distribution on nucloetide presence.
 # Creating artificial data set
 # createRandomSequencesBasedOnDistr(numberOfArtificialSeqs, seqLengthLimit, c(0.3,0.3,0.2,0.2), "data/artificialSeq-non-unis.fasta")
 
@@ -223,6 +213,7 @@ if (dataset_type == "artificial"){
 } else {
   print("Incorrect dataset type.")
 }
+sequences <- unlist(ompGene.list)
 
 #encodingValues <- createRandomSequenceValues(seedValuesList, type) - we don't neet this function
 encodingValues <- matrix(0, nrow = length(encodings), ncol = 4)
@@ -230,12 +221,6 @@ for (i in 1:nrow(encodingValues)){
   encodingValues[i,] <- encodings[[i]]
 }
 
-sequences <- unlist(ompGene.list)
-
-# encodingValues
-# Do not run this cell if you want to check for all nucleotides and not just for A
-# encodingValues[1,] <- c(3, 2, 1, 4)
-# encodingValues
 
 sizeExp <- length(ompGene.list)
 selectedSequences <- c(1:sizeExp)
@@ -254,6 +239,7 @@ len_of_sequences <- str_length(sequences[1])
 primes <- primes[1:len_of_sequences]
 primes <- as.numeric(primes)
 
+# main loop - godel number calculation
 for (indexPos in 1:numberOfEncodings) {
 
   stringAssignValues[indexPos] <- assignSets(encodingValues[indexPos,], type)
@@ -311,7 +297,7 @@ for (i in 1:numberOfEncodings){
 
 #-------------------- Main histogram plotting ----------------------------------
 dir.create('plots')
-indexPos = 1 #7,9,15,16,17,18,19,21
+indexPos = 1 # Specify which encoding to plot
 binwidthPlot = 5
 this_enc <- paste(encodingValues[indexPos,], collapse = '')
 
