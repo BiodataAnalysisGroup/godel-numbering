@@ -37,7 +37,7 @@ git clone https://github.com/BiodataAnalysisGroup/godel-numbering.git
 
 ### Extra files
 - Download **S1_L001** and **S10_L001** samples from [E-MTAB-6962 - RNA-seq dataset](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-6962/samples/), which correspond to ERR2681749_1.fastq.gz and ERR2681763_1.fastq.gz files respectively. 
-- **Store them in the same directoy.**.
+- **Store both files in a single directoy.**.
 
 ### Running the project
 The analysis is implemented in two scripts:
