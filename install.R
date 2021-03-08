@@ -5,6 +5,3 @@ install.packages("ggpubr")
 install.packages("stringr")
 install.packages("combinat")
 install.packages("microseq")
-
-# in one line
-install.packages(c("seqinr", "MASS", "ggplot2", "ggpubr", "stringr", "combinat" , "microseq"))
