@@ -29,12 +29,15 @@ install.packages(c("seqinr", "MASS", "ggplot2", "ggpubr", "stringr", "combinat" 
 
 or run `install.R` script.
 
-
 ### Setting up
 The project can be downloaded using git:
 ```
 git clone https://github.com/BiodataAnalysisGroup/godel-numbering.git
 ```
+
+### Extra files
+- Download **S1_L001** and **S10_L001** samples from [E-MTAB-6962 - RNA-seq dataset](https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-6962/samples/), which correspond to ERR2681749_1.fastq.gz and ERR2681763_1.fastq.gz files respectively. 
+- **Store them in the same directoy.**.
 
 ### Running the project
 The framework consists of six scripts:
