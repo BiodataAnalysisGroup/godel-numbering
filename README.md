@@ -40,18 +40,14 @@ git clone https://github.com/BiodataAnalysisGroup/godel-numbering.git
 - **Store them in the same directoy.**.
 
 ### Running the project
-The framework consists of six scripts:
-- ```script_mirs.R```
-- ```qc.R``` 
-- ```diff_analysis.R```
-- ```fa.R```
-- ```save_as_pdf.R``` 
-- ```save_image.R```
+The main framework consists of six scripts:
+- ```Biological-Sequences-and-Godel-numbers.R```
+- ```e-mtab-data.R````
 
 In order to run the project:
-1. Set the [R](https://github.com/BiodataAnalysisGroup/miRNAtool/tree/main/R) folder as your working directory
-2. Place the required input files inside the `data` directory and set the parameters inside the .yaml file. See instructions [here](https://github.com/BiodataAnalysisGroup/miRNAtool/tree/main/data). 
-3. Use the following command:
-```
-source("script_mirs.R")
-```
+1. Set the main project folder as your working directory.
+2. Execute either `Biological-Sequences-and-Godel-numbers.R`or `e-mtab-data.R`, depending on which analysis you would like to run.
+
+## Additional scripts
+- `biom_data_150bp_to_fasta.R`: Transforms `biom_data_150bp.rda` into .fasta file.
+
