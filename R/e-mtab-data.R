@@ -23,7 +23,7 @@ file2 <- 'ERR2681763_1.fastq.gz' # S1_L001 - subset 8
 # choose file
 # file1: ERR2681749_1.fastq.gz - S10_L001
 # file2: ERR2681763_1.fastq.gz - S1_L001
-file_chosen <- file2
+file_chosen <- file1
 
 
 if (file_chosen == 'ERR2681749_1.fastq.gz'){
@@ -213,7 +213,7 @@ unique(lens)
 #table(lens) # sequences with 151 bases are the most frequent
 
 # Keep only sequences of length 151
-sequences <- sequences[which(lens == 151 ),]
+sequences <- sequences[which(lens == 150 ),]
 
 #----------------------------- Analysis ----------------------------------------
 
@@ -223,7 +223,7 @@ type <- "DNA"                     # type of data
 logOutput <- FALSE                # debug output
 encodings <- permn(c(1,2,3,4))
 limit  <- 100000
-seqLengthLimit <- 151
+seqLengthLimit <- 150
 sequences <- sequences[1:limit,]
 
 encodingValues <- matrix(0, nrow = length(encodings), ncol = 4)
@@ -316,18 +316,20 @@ this_enc <- paste(encodingValues[indexPos,], collapse = '')
 filepath <- paste('plots/comparisons_human_',file_code, '.csv', sep = '' )
 write.csv(as.data.frame(statsPos), file = filepath)
 
+this_title= expression(paste('Histogram and Density plot of ','log'[2],'(Godel numbers) - encoding 1234', sep = '' ))
+
 # Plots
 filepath <- paste('plots/histogram_human_', file_code,'_encoding_', this_enc,'.png', sep = '' )
-png(file = filepath, width=800, height=600)
+png(file = filepath, width=1200, height=800)
 my_plot <- ggplot(godelValuePoints, aes(x=godelValuePoints[, indexPos]), environment = environment()) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white", binwidth=binwidthPlot)+
   geom_density(alpha=.2, fill="#FF6666") +
   stat_function(fun = dnorm, args = list(mean = para[indexPos, 1], sd = para[indexPos, 2]), color = "darkred", size = 2, linetype = "dotdash") +
-  labs(title= paste("Histogram and Density plot of Godel numbers - encoding ", this_enc, sep = ''),x="Godel numbers", y = "Density")+
+  labs(title = this_title, x=expression('log'[2]('Godel Numbers')), y = "Density")+
   scale_color_brewer(palette="Accent") + 
-  theme_minimal()
+  theme(title  = element_text(size=20),
+        axis.text.x = element_text(size = 20, face = 'bold'), axis.text.y = element_text(size = 15), 
+        axis.title.x =  element_text(size=20)) 
 print(my_plot)
 dev.off()
-
-
 

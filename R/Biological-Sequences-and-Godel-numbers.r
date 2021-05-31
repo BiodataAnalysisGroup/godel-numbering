@@ -13,7 +13,7 @@ library(combinat)
 
 #--------------------- SELECT DATA ---------------------------------------------
 # 'artificial' and 'artificial-non-uni' for artificial dataset, 'real' for real-world data (biom_data_150bp.rda)
-dataset_type <- "artificial"
+dataset_type <- "real"
 
 #---------------- FUNCTIONS ----------------------------------------------------
 
@@ -305,16 +305,20 @@ this_enc <- paste(encodingValues[indexPos,], collapse = '')
 filepath <- paste('plots/comparisons_',dataset_type, '.csv', sep = '' )
 write.csv(as.data.frame(statsPos), file = filepath)
 
+this_title= expression(paste('Histogram and Density plot of ','log'[2],'(Godel numbers) - encoding 1234', sep = '' ))
+
 # Plots
 filepath <- paste('plots/histogram_encoding_', this_enc,'_',dataset_type, '.png', sep = '' )
-png(file = filepath, width=800, height=600)
+png(file = filepath, width=1200, height=800)
 my_plot <- ggplot(godelValuePoints, aes(x=godelValuePoints[, indexPos]), environment = environment()) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white", binwidth=binwidthPlot)+
   geom_density(alpha=.2, fill="#FF6666") +
   stat_function(fun = dnorm, args = list(mean = para[indexPos, 1], sd = para[indexPos, 2]), color = "darkred", size = 2, linetype = "dotdash") +
-  labs(title= paste("Histogram and Density plot of Godel numbers - encoding ", this_enc, sep = ''),x="Godel numbers", y = "Density")+
+  labs(title = this_title, x=expression('log'[2]('Godel Numbers')), y = "Density")+
   scale_color_brewer(palette="Accent") + 
-  theme_minimal()
+  theme(title  = element_text(size=20),
+        axis.text.x = element_text(size = 20, face = 'bold'), axis.text.y = element_text(size = 15), 
+        axis.title.x =  element_text(size=20)) 
 print(my_plot)
 dev.off()
 
