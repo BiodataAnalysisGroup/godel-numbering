@@ -324,9 +324,11 @@ png(file = filepath, width=1200, height=800)
 my_plot <- ggplot(godelValuePoints, aes(x=godelValuePoints[, indexPos]), environment = environment()) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white", binwidth=binwidthPlot)+
   geom_density(alpha=.2, fill="#FF6666") +
-  stat_function(fun = dnorm, args = list(mean = theoreticalMeanEqual, sd = theoreticalStdEqual), color = "darkred", size = 2, linetype = "dotdash") +
+  stat_function(fun = dnorm, args = list(mean = theoreticalMeanEqual, sd = theoreticalStdEqual), color = "darkblue", size = 1, linetype = "longdash") +
+  stat_function(fun = dnorm, args = list(mean = para[indexPos,1], sd = para[indexPos,2]), color = "darkred", size = 2, linetype = "dotdash") +
   labs(title = this_title, x=expression('ln(Godel Numbers)'), y = "Density")+
-  xlim(min(godelValuePoints[,indexPos],theoretical_dist), max(godelValuePoints[,indexPos],theoretical_dist)) +
+  xlim(1000,3000) +
+  ylim(0, 0.009) +
   scale_color_brewer(palette="Accent") + 
   theme(title  = element_text(size=20),
         axis.text.x = element_text(size = 20, face = 'bold'), axis.text.y = element_text(size = 15), 
