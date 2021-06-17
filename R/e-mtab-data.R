@@ -196,7 +196,7 @@ calculateGodelNumbers <- function(sequences, primes, encoding){
   chars.enc = chars.enc + (chars == "G") * encoding[3]
   chars.enc = chars.enc + (chars == "T") * encoding[4]
   
-  primes = log2(primes)
+  primes = log(primes)
   
   chars.enc = chars.enc %*% diag(primes)
   godel_nums <- rowSums(chars.enc) # gn_new
@@ -276,8 +276,8 @@ rownames(statsPos) <- statsPos_rownames
 
 
 # Theoretical distribution parameters
-P1 <- sum(log2(primes[1:seqLengthLimit]))
-P2 <- sum((log2(primes[1:seqLengthLimit]))^2)
+P1 <- sum(log(primes[1:seqLengthLimit]))
+P2 <- sum((log(primes[1:seqLengthLimit]))^2)
 theoreticalMeanEqual <- P1*2.5
 theoreticalStdEqual <- sqrt(P2*1.25)
 theoretical_dist <- rnorm(limit, theoreticalMeanEqual, theoreticalStdEqual)
@@ -316,7 +316,7 @@ this_enc <- paste(encodingValues[indexPos,], collapse = '')
 filepath <- paste('plots/comparisons_human_',file_code, '.csv', sep = '' )
 write.csv(as.data.frame(statsPos), file = filepath)
 
-this_title= expression(paste('Histogram and Density plot of ','log'[2],'(Godel numbers) - encoding 1234', sep = '' ))
+this_title= expression(paste('Histogram and Density plot of ln(Godel numbers) - encoding 1234', sep = '' ))
 
 # Plots
 filepath <- paste('plots/histogram_human_', file_code,'_encoding_', this_enc,'.png', sep = '' )
@@ -325,7 +325,7 @@ my_plot <- ggplot(godelValuePoints, aes(x=godelValuePoints[, indexPos]), environ
   geom_histogram(aes(y=..density..), colour="black", fill="white", binwidth=binwidthPlot)+
   geom_density(alpha=.2, fill="#FF6666") +
   stat_function(fun = dnorm, args = list(mean = theoreticalMeanEqual, sd = theoreticalStdEqual), color = "darkred", size = 2, linetype = "dotdash") +
-  labs(title = this_title, x=expression('log'[2]('Godel Numbers')), y = "Density")+
+  labs(title = this_title, x=expression('ln(Godel Numbers)'), y = "Density")+
   xlim(min(godelValuePoints[,indexPos],theoretical_dist), max(godelValuePoints[,indexPos],theoretical_dist)) +
   scale_color_brewer(palette="Accent") + 
   theme(title  = element_text(size=20),
